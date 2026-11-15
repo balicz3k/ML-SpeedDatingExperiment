@@ -2,3 +2,10 @@
 __pycache__/
 .ipynb_checkpoints/
 requirements/
+
+# Dane z Kaggle (pobierane osobno, patrz README) i pliki generowane przez notatniki
+data/*.csv
+data/.complete/
+
+# Ustawienia lokalnego Jupytera
+.jupyter/
