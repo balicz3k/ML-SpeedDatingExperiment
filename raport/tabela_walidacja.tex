@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\caption{Walidacja (10 podziałów grupowych): średnia $\pm$ odchylenie standardowe.}
+\label{tab:val}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Imputacja & ROC AUC & AP & F1 (match)\\
+\midrule
+średnia & 0{,}588 $\pm$ 0{,}044 & 0{,}233 $\pm$ 0{,}036 & 0{,}298 $\pm$ 0{,}036\\
+mediana & 0{,}588 $\pm$ 0{,}045 & 0{,}233 $\pm$ 0{,}038 & 0{,}301 $\pm$ 0{,}034\\
+dominanta & 0{,}587 $\pm$ 0{,}044 & 0{,}231 $\pm$ 0{,}035 & 0{,}298 $\pm$ 0{,}037\\
+KNN (k=5) & 0{,}603 $\pm$ 0{,}042 & 0{,}242 $\pm$ 0{,}040 & 0{,}308 $\pm$ 0{,}039\\
+MICE & 0{,}592 $\pm$ 0{,}041 & 0{,}237 $\pm$ 0{,}042 & 0{,}309 $\pm$ 0{,}027\\
+losowy (Dummy) & 0{,}512 $\pm$ 0{,}022 & 0{,}181 $\pm$ 0{,}014 & 0{,}195 $\pm$ 0{,}038\\
+\bottomrule
+\end{tabular}
+\end{table}

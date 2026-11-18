@@ -9,3 +9,12 @@ data/.complete/
 
 # Ustawienia lokalnego Jupytera
 .jupyter/
+
+# Pliki pomocnicze LaTeX-a
+raport/*.aux
+raport/*.log
+raport/*.out
+raport/*.fls
+raport/*.fdb_latexmk
+raport/*.bbl
+raport/*.blg

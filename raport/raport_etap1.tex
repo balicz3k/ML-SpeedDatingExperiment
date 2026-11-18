@@ -1,0 +1,313 @@
+\documentclass[10pt,twocolumn,a4paper]{article}
+% Kompilacja: pdfLaTeX + BibTeX (latexmk -pdf raport_etap1.tex).
+% Liczby oznaczone makrami (\TestAuc itd.) pochodzą z pliku wyniki.tex,
+% generowanego przez notatnik 4_etap1_model.ipynb.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\IfFileExists{polski.sty}{\usepackage{polski}}{%
+  % awaryjnie, gdy w instalacji TeX-a brakuje pakietu polski
+  \AtBeginDocument{\renewcommand{\figurename}{Rysunek}\renewcommand{\tablename}{Tabela}%
+  \renewcommand{\contentsname}{Spis treści}}}
+\usepackage{lmodern}
+\usepackage[margin=18mm,columnsep=7mm]{geometry}
+\usepackage{microtype,graphicx}
+\usepackage{booktabs,tabularx,array}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem,placeins,xcolor,xurl,float,needspace,etoolbox}
+\usepackage[hidelinks,breaklinks=true]{hyperref}
+\hypersetup{pdftitle={Speed Dating Experiment -- raport projektowy, etap 1}}
+\setlist[itemize]{leftmargin=*,itemsep=1pt,topsep=3pt}
+\setlist[description]{leftmargin=0pt,labelsep=4pt,itemsep=3pt}
+\setlength{\emergencystretch}{1em}
+\raggedbottom
+\pretocmd{\section}{\Needspace{6\baselineskip}}{}{}
+\pretocmd{\subsection}{\Needspace{5\baselineskip}}{}{}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\renewcommand{\abstractname}{Streszczenie}
+\renewcommand{\refname}{Bibliografia}
+
+\input{wyniki.tex}
+\newcommand{\TematProjektu}{Przewidywanie obustronnej sympatii w~eksperymencie speed dating}
+\newcommand{\TypZadania}{klasyfikacja binarna (match / brak matcha)}
+
+\title{\TematProjektu\\[2mm]
+\large Zaawansowane metody uczenia maszynowego -- raport, etap~1}
+\author{Jakub Balicki\\\small Informatyka II st., Data Science, grupa DS1}
+\date{\quad \today}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Na podstawie danych z~eksperymentu speed dating (Columbia University, 2002--2004)
+przewidujemy, czy spotkanie dwóch osób zakończy się \emph{matchem}, tj.\ obustronną
+chęcią ponownego spotkania. Używamy wyłącznie informacji dostępnych przed spotkaniem:
+ankiet wstępnych obu osób i~cech wydarzenia. Zbiór liczy \NTrain{}+\NTest{} spotkań;
+match występuje w~ok.\ 16\% z~nich. Dane podzielono grupowo po wydarzeniach (falach),
+dzięki czemu żadna osoba nie występuje jednocześnie w~zbiorze treningowym i~testowym.
+W~etapie~1 porównano pięć metod imputacji, przygotowano potok przetwarzania dopasowywany
+wyłącznie na danych treningowych i~zbudowano nieostrojony model bazowy (regresja
+logistyczna). Na zbiorze testowym osiąga on ROC AUC = \TestAuc{} (klasyfikator losowy:
+\DummyAuc{}) i~F1 klasy match = \TestFone{}. Sygnał jest słaby, ale powtarzalny
+w~10 podziałach walidacyjnych; jest to zgodne z~literaturą, według której wzajemna
+sympatia jest trudna do przewidzenia z~ankiet przed spotkaniem.
+\end{abstract}
+
+\section{Problem, motywacja i cel}
+\subsection{Pytanie predykcyjne}
+Odbiorcą modelu jest organizator wydarzeń typu speed dating (lub serwis randkowy),
+który przed wydarzeniem układa pary rozmów. Model ma oszacować prawdopodobieństwo,
+że dana para kobieta--mężczyzna będzie chciała spotkać się ponownie, aby kolejność
+lub dobór rozmów zwiększał liczbę udanych dopasowań.
+
+\noindent\textbf{Typ zadania:} \TypZadania.
+
+\noindent\textbf{Kontrakt predykcji:} jednostką jest \emph{spotkanie} (para osób w~danej
+fali); predykcja powstaje \emph{przed} rozmową; dostępne są ankiety wstępne obu osób
+(wiek, rasa, kierunek studiów, cele, zainteresowania, deklarowane preferencje)
+i~cechy wydarzenia; celem jest \texttt{match} = 1, gdy obie osoby zaznaczyły ,,tak'';
+wynik służy do szeregowania par.
+
+\subsection{Kryterium użyteczności}
+Model jest użyteczny, jeśli lepiej niż losowo szereguje pary (ROC AUC istotnie
+powyżej 0,5) i~wskazuje część matchy przy rozsądnej liczbie fałszywych alarmów.
+Punktami odniesienia są: klasyfikator losowy z~częstością klas oraz reguła ,,zawsze
+brak matcha'' (accuracy \AlwaysNoAcc{} na teście przy zerowej użyteczności).
+
+\section{Dane i analiza wstępna}
+\subsection{Źródło i znaczenie kolumn}
+Zbiór \emph{Speed Dating Experiment} (Kaggle, \texttt{annavictoria/speed-dating-experiment},
+pobrany 15.11.2026) pochodzi z~badań Fismana i~in.~\cite{fisman2006,fisman2008}.
+Ma 8378 wierszy i~195 kolumn; jeden wiersz to decyzja \emph{jednej} osoby po jednej
+rozmowie. W~21 falach wzięło udział 551 osób (4184 spotkania). Temat i~zbiór
+zostały zaakceptowane przez prowadzącego (arkusz ,,[ZMUM] Projekty'').
+
+W~notatniku~2 wiersze kobiety i~mężczyzny z~tego samego spotkania połączono w~jeden
+wiersz (4184 spotkania $\times$ 173 kolumny), a cel zdefiniowano na poziomie pary.
+Usunięto kolumny zapisane razem z~decyzją lub po niej (oceny partnera po rozmowie
+\texttt{attr}, \texttt{like}, \texttt{prob}, \texttt{match\_es}, ankiety z~kolejnych
+tygodni \texttt{*\_2}, \texttt{*\_3}) -- nie są dostępne w~chwili predykcji i~byłyby
+przeciekiem celu~\cite{kaufman2012}.
+
+\begin{table}[H]
+\centering
+\caption{Skrócony słownik danych (sufiks \texttt{\_woman}/\texttt{\_man} -- osoba w~parze).}
+\label{tab:dane}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}lYY@{}}
+\toprule
+Kolumna & Znaczenie / jednostka & Typ / dostępność\\
+\midrule
+\texttt{age}, \texttt{age\_diff} & wiek [lata], różnica wieku pary & liczbowa; przed\\
+\texttt{race}, \texttt{samerace} & rasa (kod 1--6), ta sama rasa & nominalna, binarna; przed\\
+\texttt{field\_cd}, \texttt{career\_c} & dziedzina studiów, planowana kariera (kody) & nominalna; przed\\
+\texttt{goal} & cel udziału w~wydarzeniu (kod 1--6) & nominalna; przed\\
+\texttt{date}, \texttt{go\_out} & częstość randek / wyjść (1--7) & porządkowa; przed\\
+\texttt{sports} \dots\ \texttt{yoga} & zainteresowania (1--10) & porządkowa; przed\\
+\texttt{int\_corr} & korelacja profili zainteresowań pary & liczbowa; przed\\
+\texttt{attr1\_1} \dots\ \texttt{shar1\_1} & czego szukam w~partnerze (100 pkt) & liczbowa; przed\\
+\texttt{income}, \texttt{tuition}, \texttt{mn\_sat} & dochód wg kodu pocztowego, czesne, SAT uczelni & liczbowa, skośna; przed\\
+\texttt{match} & obie osoby: ,,tak'' (1) & zmienna zależna\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Jakość i struktura danych}
+\textbf{Klasy.} Spotkania dzielą się na: obie osoby ,,tak'' (690; 16,5\%), tylko kobieta
+(839), tylko mężczyzna (1296), nikt (1359). Cel binarny jest więc niezbalansowany:
+match stanowi \MatchTrain\% spotkań w~zbiorze treningowym i~\MatchTest\% w~testowym.
+
+\textbf{Braki.} Po selekcji cech brakuje ok.\ 6\% komórek, ale braki dotyczą 79\% wierszy.
+Najwięcej braków mają cechy wyliczone z~kodu pocztowego i~uczelni (\texttt{income},
+\texttt{tuition}, \texttt{mn\_sat}: 40--62\%) oraz \texttt{expnum} (85\%); kolumny
+z~ponad 60\% braków (na train) usunięto.
+
+\textbf{Błędy i~niespójności} (notatniki 1--3):
+literówki i~różne zapisy tej samej wartości w~polach tekstowych (np.\ \emph{finanace},
+\emph{conneticut college}; ujednolicone słownikiem), liczby zapisane jako tekst
+z~przecinkami (\texttt{income}, \texttt{tuition}), sumy punktów preferencji różne od 100
+(9 osób), brak wieku w~94 spotkaniach. Najpoważniejsza niespójność dotyczy bloku
+\texttt{*4\_1} (,,czego szukają inni''): w~falach 6--9 zebrano go w~skali 1--10 zamiast
+rozdziału 100 punktów (mediana sumy ok.\ 45). Bloki punktowe przeliczono więc na udziały
+sumujące się do 100; jest to operacja na pojedynczym wierszu, bez uczenia się z~danych.
+
+\textbf{Typy kolumn.} Nominalne kodowane one-hot, porządkowe (skale 1--7 i~1--10)
+pozostawione jako liczby, tekst o~dużej liczbie kategorii (\texttt{field},
+\texttt{career}, \texttt{from}, \texttt{zipcode}) zastąpiony istniejącymi kodami.
+Zbiór nie zawiera znaczników czasu: \texttt{wave} jest numerem wydarzenia,
+a \texttt{date} -- częstością randek, dlatego nie tworzono cech czasowych.
+Wartości odstające (wysokie dochody, czesne) są wiarygodne i~nie zostały usunięte;
+dla cech skośnych stosujemy $\log(1+x)$.
+
+\textbf{Zależność wierszy.} Każda osoba odbywa 10--22 rozmowy w~jednej fali, więc
+wiersze nie są niezależne -- kluczowe dla podziału danych (rozdz.~\ref{sec:protokol}).
+
+\subsection{Najważniejsze obserwacje z EDA}
+Rysunek~\ref{fig:4zm} przedstawia cztery zmienne naraz: korelację zainteresowań pary,
+różnicę wieku, zgodność rasy (panele) oraz udział matchy (kolor). Udział matchy jest
+nieco wyższy w~parach tej samej rasy (18,4\% wobec 15,5\%), co jest zgodne
+z~\cite{fisman2008}. Nie widać jednak wyraźnych obszarów o~wysokim udziale matchy,
+a korelacja \texttt{int\_corr} z~celem wynosi tylko 0,03. Pojedyncze cechy słabo
+rozdzielają klasy, co zapowiada niewielką moc predykcyjną modeli.
+Analizy EDA wykonano wyłącznie na zbiorze treningowym.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{../out/wykres_4_zmienne.png}
+\caption{Udział matchy względem korelacji zainteresowań i~różnicy wieku,
+osobno dla par tej samej i~różnej rasy (train, heksagony z~min.\ 5 spotkaniami).}
+\label{fig:4zm}
+\end{figure}
+
+\section{Przegląd literatury}
+Fisman i~in.~\cite{fisman2006} na tych samych danych analizują decyzje pojedynczych
+osób (regresja probitowa z~ocenami \emph{po} rozmowie): kobiety mocniej ważą
+inteligencję i~rasę, mężczyźni atrakcyjność fizyczną. W~\cite{fisman2008} pokazano,
+że preferencja tej samej rasy jest silniejsza u~kobiet. Obie prace korzystają
+z~ocen wystawionych w~trakcie rozmowy, więc ich wyniki nie przenoszą się na nasz
+scenariusz predykcji \emph{przed} spotkaniem.
+
+Najbliższa naszemu zadaniu jest praca Joel i~in.~\cite{joel2017}: lasy losowe uczone
+na ponad 100 cechach z~ankiet przed spotkaniem dobrze przewidywały, jak bardzo
+dana osoba jest ogólnie lubiana lub wybredna, ale praktycznie nie przewidywały
+\emph{wzajemnej}, specyficznej dla pary sympatii. Nasz cel (obustronne ,,tak'')
+jest właśnie takim zjawiskiem, dlatego spodziewamy się niskiego, choć niezerowego
+ROC AUC.
+
+Metody imputacji: MICE~\cite{vanbuuren2011} uzupełnia każdą kolumnę regresją na
+pozostałych, iteracyjnie; KNN~\cite{troyanskaya2001} uśrednia wartości podobnych
+obserwacji. Przy rzadkiej klasie pozytywnej krzywa precision--recall (AP) jest
+bardziej informatywna niż ROC~\cite{saito2015}, dlatego raportujemy obie miary.
+Implementacja: scikit-learn~\cite{pedregosa2011}.
+
+\section{Protokół eksperymentu}\label{sec:protokol}
+\subsection{Podział i granica dopasowania}
+Model ma działać dla \emph{nowych} wydarzeń i~nowych uczestników, dlatego zastosowano
+\textbf{podział grupowy po falach} (\texttt{GroupShuffleSplit}, ziarno 42): każda fala
+trafia w~całości do jednego zbioru. Losowy podział wierszy umieściłby te same osoby
+(z~ich stałymi cechami i~skłonnością do mówienia ,,tak'') w~train i~test, zawyżając
+wynik. Sprawdzono, że zbiory nie mają wspólnych uczestników.
+
+\begin{itemize}
+\item \textbf{Train} (\NTrain{} spotkań, 16 fal): EDA, wybór cech, dopasowanie potoku.
+\item \textbf{Validation}: wewnątrz train 10 powtórzeń podziału grupowego
+(80\% fal -- dopasowanie, 20\% -- walidacja; ziarna 42--51); służy do porównań metod.
+\item \textbf{Test} (\NTest{} spotkań, fale 1, 2, 9, 16, 18): jednorazowa ocena
+zamrożonej procedury.
+\end{itemize}
+Fale testowe zapisano w~\texttt{data/test\_waves.txt}. Udział matchy w~teście
+(\MatchTest\%) jest zbliżony do train (\MatchTrain\%), więc dodatkowa stratyfikacja nie
+była potrzebna. Wszystkie uczone przekształcenia (imputacja, skalowanie, one-hot,
+progi braków, wykrywanie duplikatów kolumn) są dopasowywane tylko na części
+treningowej -- w~walidacji wewnątrz potoku \texttt{Pipeline}, osobno w~każdym podziale.
+
+\subsection{Metryka główna i miary pomocnicze}
+Klasa pozytywna: match. Fałszywie pozytywny wynik to nietrafione zaproszenie do
+rozmowy (niski koszt), fałszywie negatywny -- pominięta dobra para. Accuracy
+nagradza ignorowanie rzadkiej klasy (,,zawsze brak'' daje \AlwaysNoAcc{}), więc
+nie jest miarą wyboru.
+
+\noindent\textbf{Miara główna:} ROC AUC (im wyżej, tym lepiej) -- ocenia szeregowanie par
+niezależnie od progu, a model ma właśnie szeregować pary.
+
+\noindent\textbf{Miary pomocnicze:} average precision (AP) -- jakość rankingu przy rzadkiej
+klasie pozytywnej (poziom losowy = udział matchy); balanced accuracy i~F1 klasy match
+przy progu 0,5 -- jakość decyzji; accuracy tylko informacyjnie.
+
+\section{Preprocessing i baseline}
+\textbf{Kolejność przetwarzania} (wszystko w~jednym potoku):
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+\item selekcja cech: usunięcie identyfikatorów, kolumn stałych, \NDuplikaty{}
+zduplikowanych kolumn (np.\ wiek partnera zapisany dwukrotnie) i~kolumn z~ponad 60\%
+braków; nowe cechy \texttt{age\_diff}, \texttt{same\_field} -- razem \NCech{} cech;
+\item przeliczenie bloków punktowych preferencji na udziały (100 pkt);
+\item cechy liczbowe i~porządkowe: imputacja $\rightarrow$ standaryzacja;
+\item cechy skośne (\texttt{income}, \texttt{tuition}, \texttt{mn\_sat}): imputacja
+$\rightarrow \log(1+x) \rightarrow$ standaryzacja;
+\item cechy nominalne: dominanta $\rightarrow$ one-hot (kategorie poniżej 20 obserwacji
+łączone w~,,inne'').
+\end{enumerate}
+
+\textbf{Imputacja.} Porównano trzy metody proste (średnia, mediana, dominanta) i~dwie
+zaawansowane: KNN ($k=5$, na cechach wystandaryzowanych) oraz MICE (regresja bayesowska,
+10 iteracji). Rysunek~\ref{fig:imp} pokazuje rozkłady po imputacji dla kolumn z~16--46\%
+braków. Metody proste wstawiają jedną wartość, co tworzy ,,pik'' i~zaniża odchylenie
+standardowe; KNN i~MICE lepiej zachowują kształt rozkładu (mniejsza statystyka
+Kołmogorowa--Smirnowa między wartościami uzupełnionymi a~obserwowanymi -- tabela
+w~notatniku~4).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{../out/imputacja_rozklady.png}
+\caption{Rozkłady trzech kolumn po imputacji pięcioma metodami (train); czarna linia --
+wartości obserwowane.}
+\label{fig:imp}
+\end{figure}
+
+\textbf{Baseline.} Modelem bazowym jest regresja logistyczna bez strojenia
+($C=1$, wagi klas odwrotnie proporcjonalne do liczności), prosty i~interpretowalny model
+liniowy. Punktem odniesienia jest klasyfikator losowy z~częstością klas
+(\texttt{DummyClassifier}).
+
+\section{Wyniki etapu 1}
+\subsection{Stabilność względem ziarna}
+Tabela~\ref{tab:val} i~rysunek~\ref{fig:seeds} pokazują wyniki na 10 podziałach
+walidacyjnych. Różnice między metodami imputacji są mniejsze niż zmienność między
+podziałami (odchylenie standardowe ROC AUC ok.\ 0,04), choć KNN i~MICE wypadają
+minimalnie lepiej. Wszystkie warianty są wyraźnie lepsze od klasyfikatora losowego.
+Regresja logistyczna jest deterministyczna, więc zmienność wynika tylko z~podziału
+danych. Dla porównania las losowy (200 drzew, bez strojenia) na jednym stałym podziale
+i~10 ziarnach modelu daje ROC AUC = \ForestAucMean{} $\pm$ \ForestAucStd{} -- ziarno samego
+modelu wpływa na wynik znacznie mniej niż wybór fal do walidacji.
+
+\input{tabela_walidacja.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{../out/boxplot_seeds.png}
+\caption{ROC AUC i~F1 klasy match na walidacji: 5 metod imputacji i~model losowy,
+10 ziaren podziału grupowego.}
+\label{fig:seeds}
+\end{figure}
+
+\subsection{Rozmiar zbioru treningowego}
+Rysunek~\ref{fig:lc} pokazuje ROC AUC przy uczeniu na 10--100\% części treningowej
+(5 podziałów). Wynik walidacyjny rośnie z~\CurveFirst{} do ok.\ 0,59 przy 40\% danych,
+potem się wypłaszcza, a~wynik treningowy (ok.\ 0,80) pozostaje dużo wyższy.
+Model ma więc za dużo cech względem informacji w~danych (przeuczenie), a samo
+zwiększenie liczby spotkań niewiele pomoże. Wskazuje to na potrzebę regularyzacji
+i~selekcji cech w~etapie~2.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{../out/learning_curve.png}
+\caption{ROC AUC a~część zbioru treningowego (średnia $\pm$ odchylenie z~5 podziałów).}
+\label{fig:lc}
+\end{figure}
+
+\subsection{Ocena na zbiorze testowym}
+Zamrożona procedura (imputacja medianą jako najprostsza wśród równorzędnych + regresja
+logistyczna) dopasowana na całym train osiąga na testowych falach:
+ROC AUC = \TestAuc{}, AP = \TestAp{} (poziom losowy \MatchTest\%), balanced accuracy =
+\TestBacc{}, F1 klasy match = \TestFone{}. Klasyfikator losowy uzyskuje ROC AUC
+\DummyAuc{} i~F1 \DummyFone{}. Macierz pomyłek (rys.~\ref{fig:cm}) pokazuje, że model
+wychwytuje część matchy kosztem wielu fałszywych alarmów.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.62\columnwidth]{../out/macierz_pomylek_test.png}
+\caption{Macierz pomyłek modelu bazowego na zbiorze testowym (próg 0,5).}
+\label{fig:cm}
+\end{figure}
+
+\subsection{Wnioski i plan na etap 2}
+Dane wymagały scalenia par, usunięcia cech z~przyszłości, ujednolicenia tekstu
+i~skal punktowych oraz imputacji. Model bazowy daje słaby, ale stabilny sygnał
+(ROC AUC ok.\ 0,6), zgodnie z~\cite{joel2017}. W~kolejnym etapie planujemy: strojenie
+regularyzacji i~selekcję cech w~walidacji grupowej, modele nieliniowe (las losowy,
+gradient boosting), cechy opisujące dopasowanie pary (np.\ zgodność preferencji
+jednej osoby z~autoopisem drugiej) oraz dobór progu decyzyjnego.
+
+\FloatBarrier
+\bibliographystyle{plain}
+\bibliography{bibliography}
+\end{document}
