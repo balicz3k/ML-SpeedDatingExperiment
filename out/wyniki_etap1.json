@@ -1,0 +1,416 @@
+{
+ "walidacja": [
+  {
+   "imputacja": "średnia",
+   "ROC AUC mean": 0.588,
+   "ROC AUC std": 0.044,
+   "AP mean": 0.233,
+   "AP std": 0.036,
+   "balanced acc mean": 0.551,
+   "balanced acc std": 0.033,
+   "F1 (match) mean": 0.298,
+   "F1 (match) std": 0.036,
+   "accuracy mean": 0.579,
+   "accuracy std": 0.04
+  },
+  {
+   "imputacja": "mediana",
+   "ROC AUC mean": 0.588,
+   "ROC AUC std": 0.045,
+   "AP mean": 0.233,
+   "AP std": 0.038,
+   "balanced acc mean": 0.552,
+   "balanced acc std": 0.032,
+   "F1 (match) mean": 0.301,
+   "F1 (match) std": 0.034,
+   "accuracy mean": 0.569,
+   "accuracy std": 0.038
+  },
+  {
+   "imputacja": "dominanta",
+   "ROC AUC mean": 0.587,
+   "ROC AUC std": 0.044,
+   "AP mean": 0.231,
+   "AP std": 0.035,
+   "balanced acc mean": 0.55,
+   "balanced acc std": 0.037,
+   "F1 (match) mean": 0.298,
+   "F1 (match) std": 0.037,
+   "accuracy mean": 0.573,
+   "accuracy std": 0.036
+  },
+  {
+   "imputacja": "KNN (k=5)",
+   "ROC AUC mean": 0.603,
+   "ROC AUC std": 0.042,
+   "AP mean": 0.242,
+   "AP std": 0.04,
+   "balanced acc mean": 0.562,
+   "balanced acc std": 0.033,
+   "F1 (match) mean": 0.308,
+   "F1 (match) std": 0.039,
+   "accuracy mean": 0.591,
+   "accuracy std": 0.037
+  },
+  {
+   "imputacja": "MICE",
+   "ROC AUC mean": 0.592,
+   "ROC AUC std": 0.041,
+   "AP mean": 0.237,
+   "AP std": 0.042,
+   "balanced acc mean": 0.563,
+   "balanced acc std": 0.02,
+   "F1 (match) mean": 0.309,
+   "F1 (match) std": 0.027,
+   "accuracy mean": 0.589,
+   "accuracy std": 0.033
+  },
+  {
+   "imputacja": "losowy (Dummy)",
+   "ROC AUC mean": 0.512,
+   "ROC AUC std": 0.022,
+   "AP mean": 0.181,
+   "AP std": 0.014,
+   "balanced acc mean": 0.512,
+   "balanced acc std": 0.022,
+   "F1 (match) mean": 0.195,
+   "F1 (match) std": 0.038,
+   "accuracy mean": 0.719,
+   "accuracy std": 0.013
+  }
+ ],
+ "las_losowy_seedy": [
+  {
+   "seed": 42,
+   "ROC AUC": 0.5522,
+   "AP": 0.2077,
+   "balanced acc": 0.4996,
+   "F1 (match)": 0.0187,
+   "accuracy": 0.8145
+  },
+  {
+   "seed": 43,
+   "ROC AUC": 0.5731,
+   "AP": 0.2186,
+   "balanced acc": 0.4935,
+   "F1 (match)": 0.0,
+   "accuracy": 0.811
+  },
+  {
+   "seed": 44,
+   "ROC AUC": 0.5553,
+   "AP": 0.2001,
+   "balanced acc": 0.5017,
+   "F1 (match)": 0.019,
+   "accuracy": 0.818
+  },
+  {
+   "seed": 45,
+   "ROC AUC": 0.5652,
+   "AP": 0.2143,
+   "balanced acc": 0.5006,
+   "F1 (match)": 0.0189,
+   "accuracy": 0.8163
+  },
+  {
+   "seed": 46,
+   "ROC AUC": 0.564,
+   "AP": 0.2101,
+   "balanced acc": 0.4974,
+   "F1 (match)": 0.0183,
+   "accuracy": 0.811
+  },
+  {
+   "seed": 47,
+   "ROC AUC": 0.5976,
+   "AP": 0.2332,
+   "balanced acc": 0.4996,
+   "F1 (match)": 0.0187,
+   "accuracy": 0.8145
+  },
+  {
+   "seed": 48,
+   "ROC AUC": 0.5754,
+   "AP": 0.2125,
+   "balanced acc": 0.4974,
+   "F1 (match)": 0.0183,
+   "accuracy": 0.811
+  },
+  {
+   "seed": 49,
+   "ROC AUC": 0.5889,
+   "AP": 0.2351,
+   "balanced acc": 0.4985,
+   "F1 (match)": 0.0185,
+   "accuracy": 0.8127
+  },
+  {
+   "seed": 50,
+   "ROC AUC": 0.5772,
+   "AP": 0.2177,
+   "balanced acc": 0.4953,
+   "F1 (match)": 0.018,
+   "accuracy": 0.8074
+  },
+  {
+   "seed": 51,
+   "ROC AUC": 0.5889,
+   "AP": 0.2347,
+   "balanced acc": 0.4925,
+   "F1 (match)": 0.0,
+   "accuracy": 0.8092
+  }
+ ],
+ "krzywa": [
+  {
+   "frakcja": 0.1,
+   "n_train": 260.2,
+   "train": 0.9962,
+   "walidacja": 0.5263
+  },
+  {
+   "frakcja": 0.2,
+   "n_train": 520.2,
+   "train": 0.9487,
+   "walidacja": 0.5454
+  },
+  {
+   "frakcja": 0.3,
+   "n_train": 780.0,
+   "train": 0.9019,
+   "walidacja": 0.5747
+  },
+  {
+   "frakcja": 0.4,
+   "n_train": 1039.8,
+   "train": 0.8701,
+   "walidacja": 0.5951
+  },
+  {
+   "frakcja": 0.5,
+   "n_train": 1300.2,
+   "train": 0.8486,
+   "walidacja": 0.5836
+  },
+  {
+   "frakcja": 0.6,
+   "n_train": 1560.8,
+   "train": 0.8373,
+   "walidacja": 0.5955
+  },
+  {
+   "frakcja": 0.7,
+   "n_train": 1820.6,
+   "train": 0.8245,
+   "walidacja": 0.5926
+  },
+  {
+   "frakcja": 0.8,
+   "n_train": 2080.4,
+   "train": 0.8134,
+   "walidacja": 0.5933
+  },
+  {
+   "frakcja": 0.9,
+   "n_train": 2340.4,
+   "train": 0.8078,
+   "walidacja": 0.5944
+  },
+  {
+   "frakcja": 1.0,
+   "n_train": 2600.6,
+   "train": 0.8018,
+   "walidacja": 0.5942
+  }
+ ],
+ "imputacja": [
+  {
+   "kolumna": "mn_sat_woman",
+   "metoda": "średnia",
+   "braki_%": 45.9,
+   "średnia_po": 1285.67,
+   "odch_std_przed": 118.44,
+   "odch_std_po": 87.1,
+   "KS_uzupełnione_vs_obserwowane": 0.566
+  },
+  {
+   "kolumna": "mn_sat_woman",
+   "metoda": "mediana",
+   "braki_%": 45.9,
+   "średnia_po": 1287.66,
+   "odch_std_przed": 118.44,
+   "odch_std_po": 87.13,
+   "KS_uzupełnione_vs_obserwowane": 0.48
+  },
+  {
+   "kolumna": "mn_sat_woman",
+   "metoda": "dominanta",
+   "braki_%": 45.9,
+   "średnia_po": 1338.15,
+   "odch_std_przed": 118.44,
+   "odch_std_po": 104.09,
+   "KS_uzupełnione_vs_obserwowane": 0.734
+  },
+  {
+   "kolumna": "mn_sat_woman",
+   "metoda": "KNN (k=5)",
+   "braki_%": 45.9,
+   "średnia_po": 1285.33,
+   "odch_std_przed": 118.44,
+   "odch_std_po": 99.35,
+   "KS_uzupełnione_vs_obserwowane": 0.247
+  },
+  {
+   "kolumna": "mn_sat_woman",
+   "metoda": "MICE",
+   "braki_%": 45.9,
+   "średnia_po": 1277.03,
+   "odch_std_przed": 118.44,
+   "odch_std_po": 111.64,
+   "KS_uzupełnione_vs_obserwowane": 0.192
+  },
+  {
+   "kolumna": "attr4_1_man",
+   "metoda": "średnia",
+   "braki_%": 16.2,
+   "średnia_po": 32.33,
+   "odch_std_przed": 15.18,
+   "odch_std_po": 13.89,
+   "KS_uzupełnione_vs_obserwowane": 0.647
+  },
+  {
+   "kolumna": "attr4_1_man",
+   "metoda": "mediana",
+   "braki_%": 16.2,
+   "średnia_po": 31.96,
+   "odch_std_przed": 15.18,
+   "odch_std_po": 13.92,
+   "KS_uzupełnione_vs_obserwowane": 0.465
+  },
+  {
+   "kolumna": "attr4_1_man",
+   "metoda": "dominanta",
+   "braki_%": 16.2,
+   "średnia_po": 31.96,
+   "odch_std_przed": 15.18,
+   "odch_std_po": 13.92,
+   "KS_uzupełnione_vs_obserwowane": 0.465
+  },
+  {
+   "kolumna": "attr4_1_man",
+   "metoda": "KNN (k=5)",
+   "braki_%": 16.2,
+   "średnia_po": 31.32,
+   "odch_std_przed": 15.18,
+   "odch_std_po": 14.31,
+   "KS_uzupełnione_vs_obserwowane": 0.309
+  },
+  {
+   "kolumna": "attr4_1_man",
+   "metoda": "MICE",
+   "braki_%": 16.2,
+   "średnia_po": 32.33,
+   "odch_std_przed": 15.18,
+   "odch_std_po": 13.89,
+   "KS_uzupełnione_vs_obserwowane": 0.647
+  },
+  {
+   "kolumna": "income_woman",
+   "metoda": "średnia",
+   "braki_%": 41.6,
+   "średnia_po": 44072.13,
+   "odch_std_przed": 18160.83,
+   "odch_std_po": 13881.08,
+   "KS_uzupełnione_vs_obserwowane": 0.56
+  },
+  {
+   "kolumna": "income_woman",
+   "metoda": "mediana",
+   "braki_%": 41.6,
+   "średnia_po": 42988.88,
+   "odch_std_przed": 18160.83,
+   "odch_std_po": 13940.39,
+   "KS_uzupełnione_vs_obserwowane": 0.497
+  },
+  {
+   "kolumna": "income_woman",
+   "metoda": "dominanta",
+   "braki_%": 41.6,
+   "średnia_po": 36311.38,
+   "odch_std_przed": 18160.83,
+   "odch_std_po": 16654.81,
+   "KS_uzupełnione_vs_obserwowane": 0.864
+  },
+  {
+   "kolumna": "income_woman",
+   "metoda": "KNN (k=5)",
+   "braki_%": 41.6,
+   "średnia_po": 44791.86,
+   "odch_std_przed": 18160.83,
+   "odch_std_po": 15168.72,
+   "KS_uzupełnione_vs_obserwowane": 0.201
+  },
+  {
+   "kolumna": "income_woman",
+   "metoda": "MICE",
+   "braki_%": 41.6,
+   "średnia_po": 42531.92,
+   "odch_std_przed": 18160.83,
+   "odch_std_po": 19762.1,
+   "KS_uzupełnione_vs_obserwowane": 0.127
+  }
+ ],
+ "test": [
+  {
+   "index": "regresja logistyczna",
+   "ROC AUC": 0.571,
+   "AP": 0.202,
+   "balanced acc": 0.562,
+   "F1 (match)": 0.289,
+   "accuracy": 0.528
+  },
+  {
+   "index": "losowy (Dummy)",
+   "ROC AUC": 0.482,
+   "AP": 0.153,
+   "balanced acc": 0.482,
+   "F1 (match)": 0.132,
+   "accuracy": 0.718
+  },
+  {
+   "index": "zawsze „brak matcha”",
+   "ROC AUC": 0.5,
+   "AP": 0.157,
+   "balanced acc": 0.5,
+   "F1 (match)": 0.0,
+   "accuracy": 0.843
+  }
+ ],
+ "usuniete_rzadkie": [
+  "expnum_woman",
+  "expnum_man",
+  "mn_sat_man",
+  "income_man"
+ ],
+ "duplikaty": [
+  "condtn_man",
+  "int_corr_man",
+  "samerace_man",
+  "age_man",
+  "race_man",
+  "attr1_1_man",
+  "sinc1_1_man",
+  "intel1_1_man",
+  "fun1_1_man",
+  "amb1_1_man",
+  "shar1_1_man",
+  "age_o_man",
+  "race_o_man",
+  "pf_o_att_man",
+  "pf_o_sin_man",
+  "pf_o_int_man",
+  "pf_o_fun_man",
+  "pf_o_amb_man",
+  "pf_o_sha_man"
+ ]
+}
